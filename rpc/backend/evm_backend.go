@@ -1021,3 +1021,13 @@ func (b *Backend) GetEthereumMsgsFromTendermintBlock(resBlock *tmrpctypes.Result
 func (b Backend) UnprotectedAllowed() bool {
 	return b.allowUnprotectedTxs
 }
+
+// NamespaceEnable returns namespace enable flag
+func (b Backend) NamespaceEnable(ns string) bool {
+	for _, api := range b.cfg.JSONRPC.API {
+		if ns == api {
+			return true
+		}
+	}
+	return false
+}

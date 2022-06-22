@@ -42,6 +42,10 @@ import (
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 )
 
+const (
+	PersonalNamespace = "personal"
+)
+
 // PublicAPI is the eth_ prefixed set of APIs in the Web3 JSON-RPC spec.
 type PublicAPI struct {
 	ctx          context.Context
@@ -487,6 +491,12 @@ func (e *PublicAPI) SignTypedData(address common.Address, typedData apitypes.Typ
 // SendTransaction sends an Ethereum transaction.
 func (e *PublicAPI) SendTransaction(args evmtypes.TransactionArgs) (common.Hash, error) {
 	e.logger.Debug("eth_sendTransaction", "args", args.String())
+
+	// check personal namespace enable
+	if !e.backend.NamespaceEnable(PersonalNamespace) {
+		return common.Hash{}, errors.New("invalid operation, personal namespace disabled")
+	}
+
 	return e.backend.SendTransaction(args)
 }
 
@@ -601,6 +611,12 @@ func checkTxFee(gasPrice *big.Int, gas uint64, cap float64) error {
 // the given transaction from the pool and reinsert it with the new gas price and limit.
 func (e *PublicAPI) Resend(ctx context.Context, args evmtypes.TransactionArgs, gasPrice *hexutil.Big, gasLimit *hexutil.Uint64) (common.Hash, error) {
 	e.logger.Debug("eth_resend", "args", args.String())
+
+	// check personal namespace enable
+	if !e.backend.NamespaceEnable(PersonalNamespace) {
+		return common.Hash{}, errors.New("invalid operation, personal namespace disabled")
+	}
+
 	if args.Nonce == nil {
 		return common.Hash{}, fmt.Errorf("missing transaction nonce in transaction spec")
 	}
