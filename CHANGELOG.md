@@ -59,6 +59,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 * (deps) [\#1147](https://github.com/evmos/ethermint/pull/1147) Bump Go version to `1.18`.
 * (feemarket) [\#1135](https://github.com/evmos/ethermint/pull/1135) Set lower bound of base fee to min gas price param
+* (evm) [\#1142](https://github.com/evmos/ethermint/pull/1142) Rename `RejectUnprotectedTx` to `AllowUnprotectedTxs` for consistency with go-ethereum.
 
 ### Bug Fixes
 
