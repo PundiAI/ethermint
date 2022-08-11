@@ -103,8 +103,8 @@ type EVMBackend interface {
 
 	// Tx Info
 	GetTransactionByHash(txHash common.Hash) (*rpctypes.RPCTransaction, error)
-	GetTxByEthHash(txHash common.Hash) (*tmrpctypes.ResultTx, error)
-	GetTxByTxIndex(height int64, txIndex uint) (*tmrpctypes.ResultTx, error)
+	GetTxByEthHash(txHash common.Hash) (*ethermint.TxResult, error)
+	GetTxByTxIndex(height int64, txIndex uint) (*ethermint.TxResult, error)
 	GetTransactionByBlockAndIndex(block *tmrpctypes.ResultBlock, idx hexutil.Uint) (*rpctypes.RPCTransaction, error)
 	GetTransactionReceipt(hash common.Hash) (map[string]interface{}, error)
 	GetTransactionByBlockHashAndIndex(hash common.Hash, idx hexutil.Uint) (*rpctypes.RPCTransaction, error)
@@ -143,10 +143,17 @@ type Backend struct {
 	chainID             *big.Int
 	cfg                 config.Config
 	allowUnprotectedTxs bool
+	indexer             ethermint.EVMTxIndexer
 }
 
 // NewBackend creates a new Backend instance for cosmos and ethereum namespaces
-func NewBackend(ctx *server.Context, logger log.Logger, clientCtx client.Context, allowUnprotectedTxs bool) *Backend {
+func NewBackend(
+	ctx *server.Context,
+	logger log.Logger,
+	clientCtx client.Context,
+	allowUnprotectedTxs bool,
+	indexer ethermint.EVMTxIndexer,
+) *Backend {
 	chainID, err := ethermint.ParseChainID(clientCtx.ChainID)
 	if err != nil {
 		panic(err)
@@ -181,5 +188,6 @@ func NewBackend(ctx *server.Context, logger log.Logger, clientCtx client.Context
 		chainID:             chainID,
 		cfg:                 appConf,
 		allowUnprotectedTxs: allowUnprotectedTxs,
+		indexer:             indexer,
 	}
 }
