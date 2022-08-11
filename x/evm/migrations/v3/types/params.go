@@ -25,6 +25,8 @@ var (
 
 // Parameter keys
 var (
+	ParamStoreKeyRejectUnprotectedTx = []byte("RejectUnprotectedTx")
+
 	ParamStoreKeyEVMDenom            = []byte("EVMDenom")
 	ParamStoreKeyEnableCreate        = []byte("EnableCreate")
 	ParamStoreKeyEnableCall          = []byte("EnableCall")
