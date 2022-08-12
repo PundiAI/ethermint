@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math"
 	"math/big"
 	"time"
+
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/eth/tracers/logger"
 
@@ -352,7 +353,7 @@ func (k Keeper) EstimateGas(c context.Context, req *types.EthCallRequest) (*type
 			}
 
 			receipt := &ethtypes.Receipt{
-				//Type: //TODO Unable to determine the type
+				// Type: //TODO Unable to determine the type
 				PostState:         nil,
 				Status:            ethtypes.ReceiptStatusSuccessful,
 				CumulativeGasUsed: cumulativeGasUsed,

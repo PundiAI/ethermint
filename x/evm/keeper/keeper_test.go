@@ -68,7 +68,7 @@ type KeeperTestSuite struct {
 	mintFeeCollector bool
 }
 
-/// DoSetupTest setup test environment, it uses`require.TestingT` to support both `testing.T` and `testing.B`.
+// / DoSetupTest setup test environment, it uses`require.TestingT` to support both `testing.T` and `testing.B`.
 func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {
 	checkTx := false
 
@@ -100,8 +100,7 @@ func (suite *KeeperTestSuite) DoSetupTest(t require.TestingT) {
 			maxInt := sdk.NewInt(math.MaxInt64)
 			evmGenesis.Params.ChainConfig.LondonBlock = &maxInt
 			evmGenesis.Params.ChainConfig.ArrowGlacierBlock = &maxInt
-			evmGenesis.Params.ChainConfig.GrayGlacierBlock = &maxInt
-			evmGenesis.Params.ChainConfig.MergeNetsplitBlock = &maxInt
+			evmGenesis.Params.ChainConfig.MergeForkBlock = &maxInt
 			genesis[types.ModuleName] = app.AppCodec().MustMarshalJSON(evmGenesis)
 		}
 		return genesis

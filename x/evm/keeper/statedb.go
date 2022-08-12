@@ -3,8 +3,9 @@ package keeper
 import (
 	"bytes"
 	"fmt"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"math/big"
+
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/cosmos/cosmos-sdk/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"

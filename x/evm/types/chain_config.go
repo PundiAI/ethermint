@@ -14,6 +14,9 @@ import (
 // EthereumConfig returns an Ethereum ChainConfig for EVM state transitions.
 // All the negative or nil values are converted to nil
 func (cc ChainConfig) EthereumConfig(chainID *big.Int) *params.ChainConfig {
+	mergeNetsplitBlock := getBlockValue(cc.MergeForkBlock)
+	grayGlacierBlock := mergeNetsplitBlock // TODO update after chain config added
+
 	return &params.ChainConfig{
 		ChainID:                 chainID,
 		HomesteadBlock:          getBlockValue(cc.HomesteadBlock),
@@ -31,8 +34,8 @@ func (cc ChainConfig) EthereumConfig(chainID *big.Int) *params.ChainConfig {
 		BerlinBlock:             getBlockValue(cc.BerlinBlock),
 		LondonBlock:             getBlockValue(cc.LondonBlock),
 		ArrowGlacierBlock:       getBlockValue(cc.ArrowGlacierBlock),
-		GrayGlacierBlock:        getBlockValue(cc.GrayGlacierBlock),
-		MergeNetsplitBlock:      getBlockValue(cc.MergeNetsplitBlock),
+		GrayGlacierBlock:        grayGlacierBlock,
+		MergeNetsplitBlock:      mergeNetsplitBlock,
 		TerminalTotalDifficulty: nil,
 		Ethash:                  nil,
 		Clique:                  nil,
@@ -54,8 +57,7 @@ func DefaultChainConfig() ChainConfig {
 	berlinBlock := sdk.ZeroInt()
 	londonBlock := sdk.ZeroInt()
 	arrowGlacierBlock := sdk.ZeroInt()
-	grayGlacierBlock := sdk.ZeroInt()
-	mergeNetsplitBlock := sdk.ZeroInt()
+	mergeForkBlock := sdk.ZeroInt()
 
 	return ChainConfig{
 		HomesteadBlock:      &homesteadBlock,
@@ -73,8 +75,7 @@ func DefaultChainConfig() ChainConfig {
 		BerlinBlock:         &berlinBlock,
 		LondonBlock:         &londonBlock,
 		ArrowGlacierBlock:   &arrowGlacierBlock,
-		GrayGlacierBlock:    &grayGlacierBlock,
-		MergeNetsplitBlock:  &mergeNetsplitBlock,
+		MergeForkBlock:      &mergeForkBlock,
 	}
 }
 
@@ -131,13 +132,9 @@ func (cc ChainConfig) Validate() error {
 	if err := validateBlock(cc.ArrowGlacierBlock); err != nil {
 		return sdkerrors.Wrap(err, "arrowGlacierBlock")
 	}
-	if err := validateBlock(cc.GrayGlacierBlock); err != nil {
-		return sdkerrors.Wrap(err, "GrayGlacierBlock")
+	if err := validateBlock(cc.MergeForkBlock); err != nil {
+		return sdkerrors.Wrap(err, "mergeForkBlock")
 	}
-	if err := validateBlock(cc.MergeNetsplitBlock); err != nil {
-		return sdkerrors.Wrap(err, "MergeNetsplitBlock")
-	}
-
 	// NOTE: chain ID is not needed to check config order
 	if err := cc.EthereumConfig(nil).CheckConfigForkOrder(); err != nil {
 		return sdkerrors.Wrap(err, "invalid config fork order")
