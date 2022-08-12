@@ -6,9 +6,13 @@ import (
 
 func (suite *KeeperTestSuite) TestParams() {
 	params := suite.app.EvmKeeper.GetParams(suite.ctx)
-	suite.Require().Equal(types.DefaultParams(), params)
+	defaultParams := types.DefaultParams()
+	defaultParams.AllowUnprotectedTxs = !defaultParams.AllowUnprotectedTxs
+	suite.Require().Equal(defaultParams, params)
 	params.EvmDenom = "inj"
+	params.AllowUnprotectedTxs = !params.AllowUnprotectedTxs // NOTE
 	suite.app.EvmKeeper.SetParams(suite.ctx, params)
 	newParams := suite.app.EvmKeeper.GetParams(suite.ctx)
+	params.AllowUnprotectedTxs = !params.AllowUnprotectedTxs // NOTE
 	suite.Require().Equal(newParams, params)
 }

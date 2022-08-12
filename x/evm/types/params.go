@@ -20,7 +20,9 @@ var (
 	// DefaultMinGasMultiplier is 0.5 or 50%
 	DefaultMinGasMultiplier = sdk.NewDecWithPrec(50, 2)
 	// DefaultAllowUnprotectedTxs rejects all unprotected txs (i.e false)
-	DefaultAllowUnprotectedTxs = false
+	DefaultAllowUnprotectedTxs = true
+
+	DefaultRejectUnprotectedTx = false
 )
 
 // Parameter keys
@@ -30,7 +32,7 @@ var (
 	ParamStoreKeyEnableCall          = []byte("EnableCall")
 	ParamStoreKeyExtraEIPs           = []byte("EnableExtraEIPs")
 	ParamStoreKeyChainConfig         = []byte("ChainConfig")
-	ParamStoreKeyAllowUnprotectedTxs = []byte("AllowUnprotectedTxs")
+	ParamStoreKeyRejectUnprotectedTx = []byte("RejectUnprotectedTx")
 
 	// AvailableExtraEIPs define the list of all EIPs that can be enabled by the
 	// EVM interpreter. These EIPs are applied in order and can override the
@@ -77,7 +79,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(ParamStoreKeyEnableCall, &p.EnableCall, validateBool),
 		paramtypes.NewParamSetPair(ParamStoreKeyExtraEIPs, &p.ExtraEIPs, validateEIPs),
 		paramtypes.NewParamSetPair(ParamStoreKeyChainConfig, &p.ChainConfig, validateChainConfig),
-		paramtypes.NewParamSetPair(ParamStoreKeyAllowUnprotectedTxs, &p.AllowUnprotectedTxs, validateBool),
+		paramtypes.NewParamSetPair(ParamStoreKeyRejectUnprotectedTx, &p.AllowUnprotectedTxs, validateBool),
 	}
 }
 

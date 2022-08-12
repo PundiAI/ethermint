@@ -30,7 +30,7 @@ func (suite AnteTestSuite) TestEthSigVerificationDecorator() {
 	testCases := []struct {
 		name                string
 		tx                  sdk.Tx
-		allowUnprotectedTxs bool
+		rejectUnprotectedTx bool
 		reCheckTx           bool
 		expPass             bool
 	}{
@@ -51,7 +51,7 @@ func (suite AnteTestSuite) TestEthSigVerificationDecorator() {
 	for _, tc := range testCases {
 		suite.Run(tc.name, func() {
 			suite.evmParamsOption = func(params *evmtypes.Params) {
-				params.AllowUnprotectedTxs = tc.allowUnprotectedTxs
+				params.AllowUnprotectedTxs = !tc.rejectUnprotectedTx
 			}
 			suite.SetupTest()
 			dec := ante.NewEthSigVerificationDecorator(suite.app.EvmKeeper)

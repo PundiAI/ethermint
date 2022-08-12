@@ -14,6 +14,6 @@ func MigrateStore(ctx sdk.Context, paramstore *paramtypes.Subspace) error {
 	}
 
 	// add RejectUnprotected
-	paramstore.Set(ctx, types.ParamStoreKeyAllowUnprotectedTxs, types.DefaultAllowUnprotectedTxs)
+	paramstore.Set(ctx, types.ParamStoreKeyRejectUnprotectedTx, types.DefaultRejectUnprotectedTx)
 	return nil
 }
