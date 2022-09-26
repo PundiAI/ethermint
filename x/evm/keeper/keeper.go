@@ -220,6 +220,11 @@ func (k *Keeper) SetHooks(eh types.EvmHooks) *Keeper {
 	return k
 }
 
+// GetHooks get EVM module hooks
+func (k *Keeper) GetHooks() types.EvmHooks {
+	return k.hooks
+}
+
 // PostTxProcessing delegate the call to the hooks. If no hook has been registered, this function returns with a `nil` error
 func (k *Keeper) PostTxProcessing(ctx sdk.Context, msg core.Message, receipt *ethtypes.Receipt) error {
 	if k.hooks == nil {
