@@ -107,7 +107,10 @@ func NewBackend(ctx *server.Context, logger log.Logger, clientCtx client.Context
 		panic(err)
 	}
 
-	appConf := config.GetConfig(ctx.Viper)
+	appConf, err := config.GetConfig(ctx.Viper)
+	if err != nil {
+		panic(err)
+	}
 
 	return &Backend{
 		ctx:                 context.Background(),
