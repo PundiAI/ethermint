@@ -147,7 +147,7 @@ all: build
 
 build-all: tools build lint test
 
-.PHONY: distclean clean build-all
+.PHONY: build distclean clean build-all
 
 ###############################################################################
 ###                                Releasing                                ###
