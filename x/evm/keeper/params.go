@@ -22,6 +22,8 @@ func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 
 // SetParams sets the evm parameters to the param space.
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
-	// NOTE: params AllowUnprotectedTxs
+	// TODO params store RejectUnprotectedTx, value is the opposite of AllowUnprotectedTxs
+	params.AllowUnprotectedTxs = !params.AllowUnprotectedTxs
+
 	k.paramSpace.SetParamSet(ctx, &params)
 }

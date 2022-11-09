@@ -406,7 +406,6 @@ func (suite *KeeperTestSuite) TestQueryParams() {
 	res, err := suite.queryClient.Params(ctx, &types.QueryParamsRequest{})
 	suite.Require().NoError(err)
 
-	expParams.AllowUnprotectedTxs = !expParams.AllowUnprotectedTxs
 	suite.Require().Equal(expParams, res.Params)
 }
 

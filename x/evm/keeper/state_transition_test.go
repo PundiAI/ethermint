@@ -490,7 +490,6 @@ func (suite *KeeperTestSuite) TestEVMConfig() {
 	cfg, err := suite.app.EvmKeeper.EVMConfig(suite.ctx)
 	suite.Require().NoError(err)
 	defaultParams := types.DefaultParams()
-	defaultParams.AllowUnprotectedTxs = !defaultParams.AllowUnprotectedTxs
 	suite.Require().Equal(defaultParams, cfg.Params)
 	// london hardfork is enabled by default
 	suite.Require().Equal(big.NewInt(0), cfg.BaseFee)
