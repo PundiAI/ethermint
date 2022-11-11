@@ -130,7 +130,9 @@ func newMsgEthereumTx(
 		panic(err)
 	}
 
-	return &MsgEthereumTx{Data: dataAny}
+	msg := MsgEthereumTx{Data: dataAny}
+	msg.Hash = msg.AsTransaction().Hash().Hex()
+	return &msg
 }
 
 // fromEthereumTx populates the message fields from the given ethereum transaction
@@ -337,6 +339,10 @@ func (msg *MsgEthereumTx) BuildTx(b client.TxBuilder, evmDenom string) (signing.
 	}
 
 	builder.SetExtensionOptions(option)
+
+	// A valid msg should have empty `From`
+	msg.From = ""
+
 	err = builder.SetMsgs(msg)
 	if err != nil {
 		return nil, err
