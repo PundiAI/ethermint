@@ -1,7 +1,9 @@
 package geth
 
 import (
+	"bytes"
 	"math/big"
+	"sort"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -34,6 +36,20 @@ func NewEVM(
 	e := &EVM{
 		EVM: vm.NewEVM(blockCtx, txCtx, stateDB, chainConfig, config),
 	}
+
+	// pre-compiled contracts
+	if len(customContracts) > 0 {
+		active := make([]common.Address, 0, len(customContracts))
+		for addr := range customContracts {
+			active = append(active, addr)
+		}
+		sort.SliceStable(active, func(i, j int) bool {
+			return bytes.Compare(active[i].Bytes(), active[j].Bytes()) < 0
+		})
+		e.WithPrecompiles(customContracts, active)
+	}
+
+	return e
 }
 
 // Context returns the EVM's Block Context
