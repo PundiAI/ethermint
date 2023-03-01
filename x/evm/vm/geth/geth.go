@@ -29,9 +29,9 @@ func NewEVM(
 	stateDB vm.StateDB,
 	chainConfig *params.ChainConfig,
 	config vm.Config,
-	_ evm.PrecompiledContracts, // unused
+	customContracts evm.PrecompiledContracts, // unused
 ) evm.EVM {
-	return &EVM{
+	e := &EVM{
 		EVM: vm.NewEVM(blockCtx, txCtx, stateDB, chainConfig, config),
 	}
 }
@@ -63,17 +63,18 @@ func (e EVM) Precompile(addr common.Address) (p vm.PrecompiledContract, found bo
 // ActivePrecompiles returns a list of all the active precompiled contract addresses
 // for the current chain configuration.
 func (EVM) ActivePrecompiles(rules params.Rules) []common.Address {
-	return vm.ActivePrecompiles(rules)
+	return vm.DefaultActivePrecompiles(rules)
 }
 
 // RunPrecompiledContract runs a stateless precompiled contract and ignores the address and
 // value arguments. It uses the RunPrecompiledContract function from the geth vm package.
-func (EVM) RunPrecompiledContract(
-	p evm.StatefulPrecompiledContract,
-	_ common.Address, // address arg is unused
+func (e EVM) RunPrecompiledContract(
+	p vm.PrecompiledContract,
+	caller vm.ContractRef,
 	input []byte,
 	suppliedGas uint64,
-	_ *big.Int, // 	value arg is unused
+	value *big.Int, // 	value arg is unused
+	readOnly bool,
 ) (ret []byte, remainingGas uint64, err error) {
-	return vm.RunPrecompiledContract(p, input, suppliedGas)
+	return e.EVM.RunPrecompiledContract(p, caller, input, suppliedGas, value, readOnly)
 }
