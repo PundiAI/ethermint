@@ -20,6 +20,8 @@ var (
 // EVM is the wrapper for the go-ethereum EVM.
 type EVM struct {
 	*vm.EVM
+	precompiles       evm.PrecompiledContracts
+	activePrecompiles []common.Address
 }
 
 // NewEVM defines the constructor function for the go-ethereum (geth) EVM. It uses
@@ -32,39 +34,30 @@ func NewEVM(
 	stateDB vm.StateDB,
 	chainConfig *params.ChainConfig,
 	config vm.Config,
-	customContracts evm.PrecompiledContracts, // unused
+	getPrecompilesExtended func(ctx sdk.Context, evm *vm.EVM) evm.PrecompiledContracts,
 ) evm.EVM {
-	e := &EVM{
+	newEvm := &EVM{
 		EVM: vm.NewEVM(blockCtx, txCtx, stateDB, chainConfig, config),
 	}
 
-	// pre-compiled contracts
-	if len(customContracts) > 0 {
-		defaultPrecompiles := vm.DefaultPrecompiles(chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Random != nil))
-		active := make([]common.Address, 0, len(customContracts)+len(defaultPrecompiles))
-		contracts := make(map[common.Address]vm.PrecompiledContract, len(customContracts)+len(defaultPrecompiles))
+	rules := chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Random != nil)
+	precompiles := vm.DefaultPrecompiles(rules)
+	activePrecompiles := vm.DefaultActivePrecompiles(rules)
 
-		for _, c := range defaultPrecompiles {
-			customContracts[c.Address()] = c
-			active = append(active, c.Address())
-		}
-
-		for _, c := range customContracts {
-			if ext, ok := c.(evm.ExtStateDB); ok {
-				ext.SetContext(ctx)
-				c = ext.(vm.PrecompiledContract)
-			}
-			contracts[c.Address()] = c
-			active = append(active, c.Address())
-		}
-
-		sort.SliceStable(active, func(i, j int) bool {
-			return bytes.Compare(active[i].Bytes(), active[j].Bytes()) < 0
-		})
-		e.WithPrecompiles(contracts, active)
+	customPrecompiles := getPrecompilesExtended(ctx, newEvm.EVM)
+	for k, v := range customPrecompiles {
+		precompiles[k] = v
+		activePrecompiles = append(activePrecompiles, v.Address())
 	}
 
-	return e
+	sort.SliceStable(activePrecompiles, func(i, j int) bool {
+		return bytes.Compare(activePrecompiles[i].Bytes(), activePrecompiles[j].Bytes()) < 0
+	})
+
+	newEvm.precompiles = precompiles
+	newEvm.activePrecompiles = activePrecompiles
+
+	return newEvm
 }
 
 // Context returns the EVM's Block Context
@@ -86,13 +79,12 @@ func (e EVM) Config() vm.Config {
 // and the current chain configuration. If the contract cannot be found it returns
 // nil.
 func (e EVM) Precompile(addr common.Address) (p vm.PrecompiledContract, found bool) {
-	precompiles := GetPrecompiles(e.ChainConfig(), e.EVM.Context.BlockNumber)
-	p, found = precompiles[addr]
+	p, found = e.precompiles[addr]
 	return p, found
 }
 
 // ActivePrecompiles returns a list of all the active precompiled contract addresses
 // for the current chain configuration.
-func (EVM) ActivePrecompiles(rules params.Rules) []common.Address {
-	return vm.DefaultActivePrecompiles(rules)
+func (e *EVM) ActivePrecompiles(_ params.Rules) []common.Address {
+	return e.activePrecompiles
 }
