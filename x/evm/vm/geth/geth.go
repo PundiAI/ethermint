@@ -2,9 +2,9 @@ package geth
 
 import (
 	"bytes"
-	"math/big"
 	"sort"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/params"
@@ -26,6 +26,7 @@ type EVM struct {
 // the default precompiled contracts and the EVM concrete implementation from
 // geth.
 func NewEVM(
+	ctx sdk.Context,
 	blockCtx vm.BlockContext,
 	txCtx vm.TxContext,
 	stateDB vm.StateDB,
@@ -39,14 +40,28 @@ func NewEVM(
 
 	// pre-compiled contracts
 	if len(customContracts) > 0 {
-		active := make([]common.Address, 0, len(customContracts))
-		for addr := range customContracts {
-			active = append(active, addr)
+		defaultPrecompiles := vm.DefaultPrecompiles(chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Random != nil))
+		active := make([]common.Address, 0, len(customContracts)+len(defaultPrecompiles))
+		contracts := make(map[common.Address]vm.PrecompiledContract, len(customContracts)+len(defaultPrecompiles))
+
+		for _, c := range defaultPrecompiles {
+			customContracts[c.Address()] = c
+			active = append(active, c.Address())
 		}
+
+		for _, c := range customContracts {
+			if ext, ok := c.(evm.ExtStateDB); ok {
+				ext.SetContext(ctx)
+				c = ext.(vm.PrecompiledContract)
+			}
+			contracts[c.Address()] = c
+			active = append(active, c.Address())
+		}
+
 		sort.SliceStable(active, func(i, j int) bool {
 			return bytes.Compare(active[i].Bytes(), active[j].Bytes()) < 0
 		})
-		e.WithPrecompiles(customContracts, active)
+		e.WithPrecompiles(contracts, active)
 	}
 
 	return e
@@ -80,17 +95,4 @@ func (e EVM) Precompile(addr common.Address) (p vm.PrecompiledContract, found bo
 // for the current chain configuration.
 func (EVM) ActivePrecompiles(rules params.Rules) []common.Address {
 	return vm.DefaultActivePrecompiles(rules)
-}
-
-// RunPrecompiledContract runs a stateless precompiled contract and ignores the address and
-// value arguments. It uses the RunPrecompiledContract function from the geth vm package.
-func (e EVM) RunPrecompiledContract(
-	p vm.PrecompiledContract,
-	caller vm.ContractRef,
-	input []byte,
-	suppliedGas uint64,
-	value *big.Int, // 	value arg is unused
-	readOnly bool,
-) (ret []byte, remainingGas uint64, err error) {
-	return e.EVM.RunPrecompiledContract(p, caller, input, suppliedGas, value, readOnly)
 }

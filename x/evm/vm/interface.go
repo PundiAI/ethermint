@@ -3,6 +3,7 @@ package vm
 import (
 	"math/big"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/params"
@@ -15,6 +16,11 @@ type PrecompiledContracts map[common.Address]vm.PrecompiledContract
 type StatefulPrecompiledContract interface {
 	vm.PrecompiledContract
 	RunStateful(evm EVM, addr common.Address, input []byte, value *big.Int) (ret []byte, err error)
+}
+
+// ExtStateDB defines extra methods of statedb to support stateful precompiled contracts
+type ExtStateDB interface {
+	SetContext(ctx sdk.Context)
 }
 
 // EVM defines the interface for the Ethereum Virtual Machine used by the EVM module.
@@ -58,6 +64,7 @@ type EVM interface {
 // Constructor defines the function used to instantiate the EVM on
 // each state transition.
 type Constructor func(
+	ctx sdk.Context,
 	blockCtx vm.BlockContext,
 	txCtx vm.TxContext,
 	stateDB vm.StateDB,
