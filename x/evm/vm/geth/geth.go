@@ -40,9 +40,8 @@ func NewEVM(
 		EVM: vm.NewEVM(blockCtx, txCtx, stateDB, chainConfig, config),
 	}
 
-	rules := chainConfig.Rules(blockCtx.BlockNumber, blockCtx.Random != nil)
-	precompiles := vm.DefaultPrecompiles(rules)
-	activePrecompiles := vm.DefaultActivePrecompiles(rules)
+	precompiles := GetPrecompiles(chainConfig, blockCtx.BlockNumber)
+	activePrecompiles := GetActivePrecompiles(chainConfig, blockCtx.BlockNumber)
 
 	customPrecompiles := getPrecompilesExtended(ctx, newEvm.EVM)
 	for k, v := range customPrecompiles {
