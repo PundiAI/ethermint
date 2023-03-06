@@ -5,7 +5,6 @@ import (
 	"sort"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/params"
 
@@ -20,8 +19,6 @@ var (
 // EVM is the wrapper for the go-ethereum EVM.
 type EVM struct {
 	*vm.EVM
-	precompiles       evm.PrecompiledContracts
-	activePrecompiles []common.Address
 }
 
 // NewEVM defines the constructor function for the go-ethereum (geth) EVM. It uses
@@ -53,9 +50,7 @@ func NewEVM(
 		return bytes.Compare(activePrecompiles[i].Bytes(), activePrecompiles[j].Bytes()) < 0
 	})
 
-	newEvm.precompiles = precompiles
-	newEvm.activePrecompiles = activePrecompiles
-
+	newEvm.WithPrecompiles(precompiles, activePrecompiles)
 	return newEvm
 }
 
@@ -72,18 +67,4 @@ func (e EVM) TxContext() vm.TxContext {
 // Config returns the configuration options for the EVM.
 func (e EVM) Config() vm.Config {
 	return e.EVM.Config
-}
-
-// Precompile returns the precompiled contract associated with the given address
-// and the current chain configuration. If the contract cannot be found it returns
-// nil.
-func (e EVM) Precompile(addr common.Address) (p vm.PrecompiledContract, found bool) {
-	p, found = e.precompiles[addr]
-	return p, found
-}
-
-// ActivePrecompiles returns a list of all the active precompiled contract addresses
-// for the current chain configuration.
-func (e *EVM) ActivePrecompiles(_ params.Rules) []common.Address {
-	return e.activePrecompiles
 }
