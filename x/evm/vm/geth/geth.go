@@ -16,9 +16,10 @@
 package geth
 
 import (
-	"math/big"
+	"bytes"
+	"sort"
 
-	"github.com/ethereum/go-ethereum/common"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/params"
 
@@ -39,16 +40,33 @@ type EVM struct {
 // the default precompiled contracts and the EVM concrete implementation from
 // geth.
 func NewEVM(
+	ctx sdk.Context,
 	blockCtx vm.BlockContext,
 	txCtx vm.TxContext,
 	stateDB vm.StateDB,
 	chainConfig *params.ChainConfig,
 	config vm.Config,
-	_ evm.PrecompiledContracts, // unused
+	getPrecompilesExtended func(ctx sdk.Context, evm *vm.EVM) evm.PrecompiledContracts,
 ) evm.EVM {
-	return &EVM{
+	newEvm := &EVM{
 		EVM: vm.NewEVM(blockCtx, txCtx, stateDB, chainConfig, config),
 	}
+
+	precompiles := GetPrecompiles(chainConfig, blockCtx.BlockNumber)
+	activePrecompiles := GetActivePrecompiles(chainConfig, blockCtx.BlockNumber)
+
+	customPrecompiles := getPrecompilesExtended(ctx, newEvm.EVM)
+	for k, v := range customPrecompiles {
+		precompiles[k] = v
+		activePrecompiles = append(activePrecompiles, v.Address())
+	}
+
+	sort.SliceStable(activePrecompiles, func(i, j int) bool {
+		return bytes.Compare(activePrecompiles[i].Bytes(), activePrecompiles[j].Bytes()) < 0
+	})
+
+	newEvm.WithPrecompiles(precompiles, activePrecompiles)
+	return newEvm
 }
 
 // Context returns the EVM's Block Context
@@ -64,32 +82,4 @@ func (e EVM) TxContext() vm.TxContext {
 // Config returns the configuration options for the EVM.
 func (e EVM) Config() vm.Config {
 	return e.EVM.Config
-}
-
-// Precompile returns the precompiled contract associated with the given address
-// and the current chain configuration. If the contract cannot be found it returns
-// nil.
-func (e EVM) Precompile(addr common.Address) (p vm.PrecompiledContract, found bool) {
-	precompiles := GetPrecompiles(e.ChainConfig(), e.EVM.Context.BlockNumber)
-	p, found = precompiles[addr]
-	return p, found
-}
-
-// ActivePrecompiles returns a list of all the active precompiled contract addresses
-// for the current chain configuration.
-func (EVM) ActivePrecompiles(rules params.Rules) []common.Address {
-	return vm.DefaultActivePrecompiles(rules)
-}
-
-// RunPrecompiledContract runs a stateless precompiled contract and ignores the address and
-// value arguments. It uses the RunPrecompiledContract function from the geth vm package.
-func (e EVM) RunPrecompiledContract(
-	p vm.PrecompiledContract,
-	caller vm.ContractRef,
-	input []byte,
-	suppliedGas uint64,
-	value *big.Int, // 	value arg is unused
-	readOnly bool,
-) (ret []byte, remainingGas uint64, err error) {
-	return e.EVM.RunPrecompiledContract(p, caller, input, suppliedGas, value, readOnly)
 }
