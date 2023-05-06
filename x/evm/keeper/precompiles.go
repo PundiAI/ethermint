@@ -42,7 +42,7 @@ func (k *Keeper) WithPrecompiled(precompiledFunc map[common.Address]PrecompiledC
 	return k
 }
 
-func DefaultAvailablePrecompiled() map[common.Address]PrecompiledContractFunc {
+func BerlinPrecompiled() map[common.Address]PrecompiledContractFunc {
 	precompiledFunc := make(map[common.Address]PrecompiledContractFunc, len(vm.PrecompiledContractsBerlin))
 	for addr, precompiled := range vm.PrecompiledContractsBerlin {
 		// wrap the precompiled contract to a function
