@@ -118,6 +118,8 @@ var (
 	ErrInvalidGasLimit = errorsmod.Register(ModuleName, codeErrInvalidGasLimit, "invalid gas limit")
 )
 
+var ErrExecutionForceReverted = errors.New("execution force reverted")
+
 // NewExecErrorWithReason unpacks the revert return bytes and returns a wrapped error
 // with the return reason.
 func NewExecErrorWithReason(revertReason []byte) *RevertError {

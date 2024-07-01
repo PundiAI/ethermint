@@ -137,6 +137,14 @@ func (k Keeper) ChainID() *big.Int {
 	return k.eip155ChainID
 }
 
+func (k Keeper) GetPrecompileAddress() []common.Address {
+	addrs := make([]common.Address, 0, len(k.precompiledFunc))
+	for addr := range k.precompiledFunc {
+		addrs = append(addrs, addr)
+	}
+	return addrs
+}
+
 // ----------------------------------------------------------------------------
 // Block Bloom
 // Required by Web3 API.

@@ -65,6 +65,9 @@ type StateDB struct {
 
 	// Per-transaction access list
 	accessList *accessList
+
+	// Force revert
+	forceRevert bool
 }
 
 // New creates a new state from a given trie.
@@ -446,6 +449,23 @@ func (s *StateDB) RevertToSnapshot(revid int) {
 	// Replay the journal to undo changes and remove invalidated snapshots
 	s.journal.Revert(s, snapshot)
 	s.validRevisions = s.validRevisions[:idx]
+
+	// check precompile addr
+	if s.forceRevert {
+		return
+	}
+	precompileAddrs := s.keeper.GetPrecompileAddress()
+	for _, addr := range precompileAddrs {
+		if !s.Exist(addr) {
+			continue
+		}
+		s.forceRevert = true
+		break
+	}
+}
+
+func (s *StateDB) ForceRevert() bool {
+	return s.forceRevert
 }
 
 // Commit writes the dirty states to keeper
